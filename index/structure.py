@@ -112,16 +112,17 @@ class HashIndex(Index):
         return self.dic_index[term][0].term_id
 
     def create_index_entry(self, termo_id: int) -> List:
-        return None
-
-    def add_index_occur(self, entry_dic_index: List[TermOccurrence], doc_id: int, term_id: int, term_freq: int):
-        entry_dic_index.append(None)
-
-    def get_occurrence_list(self, term: str) -> List:
         return []
 
+    def add_index_occur(self, entry_dic_index: List[TermOccurrence], doc_id: int, term_id: int, term_freq: int):
+        entry_dic_index.append(TermOccurrence(
+            doc_id=doc_id, term_freq=term_freq, term_id=term_id))
+
+    def get_occurrence_list(self, term: str) -> List:
+        return self.dic_index[term] if term in self.dic_index.keys() else []
+
     def document_count_with_term(self, term: str) -> int:
-        return 0
+        return len(self.get_occurrence_list(term))
 
 
 class TermFilePosition:
