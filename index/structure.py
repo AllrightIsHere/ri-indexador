@@ -94,10 +94,19 @@ class TermOccurrence:
         return hash((self.doc_id, self.term_id))
 
     def __eq__(self, other_occurrence: "TermOccurrence"):
-        return False
+        if other_occurrence is None:
+            return False
+
+        return self.term_id == other_occurrence.term_id and self.doc_id == other_occurrence.doc_id
 
     def __lt__(self, other_occurrence: "TermOccurrence"):
-        return False
+        if other_occurrence is None:
+            raise TypeError("Comparison not suported for NoneType.")
+
+        if self.term_id != other_occurrence.term_id:
+            return self.term_id < other_occurrence.term_id
+        else:
+            return self.doc_id < other_occurrence.doc_id
 
     def __str__(self):
         return f"( doc: {self.doc_id} term_id:{self.term_id} freq: {self.term_freq})"
