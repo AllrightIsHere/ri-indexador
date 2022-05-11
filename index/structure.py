@@ -15,12 +15,15 @@ class Index:
 
     def index(self, term: str, doc_id: int, term_freq: int):
         if term not in self.dic_index:
-            int_term_id = None
+            int_term_id = len(self.dic_index) + 1
             self.dic_index[term] = self.create_index_entry(int_term_id)
         else:
-            int_term_id = None
+            int_term_id = self.get_term_id(term)
 
-        self.add_index_occur(self.dic_index[term], doc_id, int_term_id, term_freq)
+        self.set_documents.add(doc_id)
+
+        self.add_index_occur(
+            self.dic_index[term], doc_id, int_term_id, term_freq)
 
     @property
     def vocabulary(self) -> List[str]:
@@ -32,30 +35,34 @@ class Index:
 
     @abstractmethod
     def get_term_id(self, term: str):
-        raise NotImplementedError("Voce deve criar uma subclasse e a mesma deve sobrepor este método")
+        raise NotImplementedError(
+            "Voce deve criar uma subclasse e a mesma deve sobrepor este método")
 
     @abstractmethod
     def create_index_entry(self, termo_id: int):
-        raise NotImplementedError("Voce deve criar uma subclasse e a mesma deve sobrepor este método")
+        raise NotImplementedError(
+            "Voce deve criar uma subclasse e a mesma deve sobrepor este método")
 
     @abstractmethod
     def add_index_occur(self, entry_dic_index, doc_id: int, term_id: int, freq_termo: int):
-        raise NotImplementedError("Voce deve criar uma subclasse e a mesma deve sobrepor este método")
+        raise NotImplementedError(
+            "Voce deve criar uma subclasse e a mesma deve sobrepor este método")
 
     @abstractmethod
     def get_occurrence_list(self, term: str) -> List:
-        raise NotImplementedError("Voce deve criar uma subclasse e a mesma deve sobrepor este método")
+        raise NotImplementedError(
+            "Voce deve criar uma subclasse e a mesma deve sobrepor este método")
 
     @abstractmethod
     def document_count_with_term(self, term: str) -> int:
-        raise NotImplementedError("Voce deve criar uma subclasse e a mesma deve sobrepor este método")
+        raise NotImplementedError(
+            "Voce deve criar uma subclasse e a mesma deve sobrepor este método")
 
     def finish_indexing(self):
         pass
 
     def write(self, arq_index: str):
         pass
-    
 
     @staticmethod
     def read(arq_index: str):
@@ -64,7 +71,8 @@ class Index:
     def __str__(self):
         arr_index = []
         for str_term in self.vocabulary:
-            arr_index.append(f"{str_term} -> {self.get_occurrence_list(str_term)}")
+            arr_index.append(
+                f"{str_term} -> {self.get_occurrence_list(str_term)}")
 
         return "\n".join(arr_index)
 
@@ -142,7 +150,7 @@ class FileIndex(Index):
         self.str_idx_file_name = "occur_idx_file"
 
         # metodos auxiliares para verifica o tamanho da lst_occurrences_tmp
-        self.idx_tmp_occur_last_element  = -1
+        self.idx_tmp_occur_last_element = -1
         self.idx_tmp_occur_first_element = 0
 
     def get_term_id(self, term: str):
@@ -152,8 +160,8 @@ class FileIndex(Index):
         return None
 
     def add_index_occur(self, entry_dic_index: TermFilePosition, doc_id: int, term_id: int, term_freq: int):
-        #complete aqui adicionando um novo TermOccurrence na lista lst_occurrences_tmp
-        #não esqueça de atualizar a(s) variável(is) auxiliares apropriadamente
+        # complete aqui adicionando um novo TermOccurrence na lista lst_occurrences_tmp
+        # não esqueça de atualizar a(s) variável(is) auxiliares apropriadamente
 
         if None:
             self.save_tmp_occurrences()
@@ -162,7 +170,6 @@ class FileIndex(Index):
         if self.get_tmp_occur_size() > 0:
             # obtenha o proximo da lista e armazene em nex_occur
             # não esqueça de atualizar a(s) variável(is) auxiliares apropriadamente
-
 
             return next_occur
         else:
@@ -174,7 +181,6 @@ class FileIndex(Index):
         if not bytes_doc_id:
             return None
             # seu código aqui :)
-        
 
         return TermOccurrence(doc_id, term_id, term_freq)
 
