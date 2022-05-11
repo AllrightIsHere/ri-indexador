@@ -27,11 +27,11 @@ class Index:
 
     @property
     def vocabulary(self) -> List[str]:
-        return []
+        return self.dic_index.keys()
 
     @property
     def document_count(self) -> int:
-        return 0
+        return len(self.set_documents)
 
     @abstractmethod
     def get_term_id(self, term: str):
