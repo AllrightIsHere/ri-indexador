@@ -88,7 +88,9 @@ class TermOccurrence:
         self.term_freq = term_freq
 
     def write(self, idx_file):
-        pass
+        idx_file.write(self.doc_id.to_bytes(4, byteorder="big"))
+        idx_file.write(self.term_id.to_bytes(4, byteorder="big"))
+        idx_file.write(self.term_freq.to_bytes(4, byteorder="big"))
 
     def __hash__(self):
         return hash((self.doc_id, self.term_id))
@@ -191,6 +193,17 @@ class FileIndex(Index):
         if not bytes_doc_id:
             return None
             # seu código aqui :)
+        doc_id = int.from_bytes(bytes_doc_id, byteorder='big')
+
+        bytes_term_id = file_pointer.read(4)
+        if not bytes_term_id:
+            return None
+        term_id = int.from_bytes(bytes_term_id, byteorder='big')
+
+        bytes_term_freq = file_pointer.read(4)
+        if not bytes_term_freq:
+            return None
+        term_freq = int.from_bytes(bytes_term_freq, byteorder='big')
 
         return TermOccurrence(doc_id, term_id, term_freq)
 
