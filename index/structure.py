@@ -169,20 +169,32 @@ class FileIndex(Index):
         return self.dic_index[term].term_id
 
     def create_index_entry(self, term_id: int) -> TermFilePosition:
-        return None
+        return TermFilePosition(term_id)
 
     def add_index_occur(self, entry_dic_index: TermFilePosition, doc_id: int, term_id: int, term_freq: int):
         # complete aqui adicionando um novo TermOccurrence na lista lst_occurrences_tmp
         # não esqueça de atualizar a(s) variável(is) auxiliares apropriadamente
+        self.idx_tmp_occur_last_element += 1
+        self.lst_occurrences_tmp[self.idx_tmp_occur_last_element] = TermOccurrence(
+            doc_id, term_id, term_freq)
 
-        if None:
+        self.idx_file_counter += 1
+
+        if self.idx_tmp_occur_last_element + 1 == self.TMP_OCCURRENCES_LIMIT:
+            self.idx_tmp_occur_last_element = -1
+            self.idx_tmp_occur_first_element = 0
             self.save_tmp_occurrences()
+
+    def get_tmp_occur_size(self) -> int:
+        return self.idx_tmp_occur_last_element - self.idx_tmp_occur_first_element + 1 if self.idx_tmp_occur_last_element > -1 else 0
 
     def next_from_list(self) -> TermOccurrence:
         if self.get_tmp_occur_size() > 0:
             # obtenha o proximo da lista e armazene em nex_occur
             # não esqueça de atualizar a(s) variável(is) auxiliares apropriadamente
-
+            next_occur = self.lst_occurrences_tmp[self.idx_tmp_occur_first_element]
+            self.lst_occurrences_tmp[self.idx_tmp_occur_first_element] = None
+            self.idx_tmp_occur_first_element += 1
             return next_occur
         else:
             return None
