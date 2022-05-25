@@ -282,20 +282,58 @@ class FileIndex(Index):
         gc.enable()
 
     def finish_indexing(self):
-        if len(self.lst_occurrences_tmp) > 0:
+        if self.get_tmp_occur_size() > 0:
             self.save_tmp_occurrences()
 
         # Sugestão: faça a navegação e obetenha um mapeamento
         # id_termo -> obj_termo armazene-o em dic_ids_por_termo
         # obj_termo é a instancia TermFilePosition correspondente ao id_termo
         dic_ids_por_termo = {}
+
+        # print(self.dic_index.items())
+
         for str_term, obj_term in self.dic_index.items():
-            pass
+            # print(str_term)
+            dic_ids_por_termo[obj_term.term_id] = obj_term
+
+        # print(dic_ids_por_termo.items())
+
+        count_term = 0
 
         with open(self.str_idx_file_name, 'rb') as idx_file:
             # navega nas ocorrencias para atualizar cada termo em dic_ids_por_termo
             # apropriadamente
-            pass
+            term_atual = self.next_from_file(idx_file)
+            term_anterior = term_atual
+
+            if term_atual.term_id not in dic_ids_por_termo.keys():
+                dic_ids_por_termo[term_atual.term_id] = TermFilePosition(
+                    term_id=term_atual.term_id)
+
+            dic_ids_por_termo[term_atual.term_id].term_file_start_pos = 0
+
+            while term_atual is not None:
+                position = idx_file.tell()
+
+                if term_atual.term_id not in dic_ids_por_termo.keys():
+                    dic_ids_por_termo[term_atual.term_id] = TermFilePosition(
+                        term_atual.term_id)
+                    dic_ids_por_termo[term_atual.term_id].term_file_start_pos = position - 12
+                    count_term = 1
+                elif term_atual.term_id == term_anterior.term_id:
+                    count_term += 1
+                else:
+                    dic_ids_por_termo[term_anterior.term_id].doc_count_with_term = count_term
+                    dic_ids_por_termo[term_atual.term_id].term_file_start_pos = position - 12
+                    count_term = 1
+
+                # print(term_atual)
+                term_anterior = term_atual
+                term_atual = self.next_from_file(idx_file)
+
+        idx_file.close()
+        dic_ids_por_termo[term_anterior.term_id].doc_count_with_term = count_term
+        # print(self.dic_index)
 
     def get_occurrence_list(self, term: str) -> List:
         return []
