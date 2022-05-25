@@ -103,7 +103,8 @@ class TermOccurrence:
 
     def __lt__(self, other_occurrence: "TermOccurrence"):
         if other_occurrence is None:
-            raise TypeError("Comparison not suported for NoneType.")
+            return True
+            # raise TypeError("Comparison not suported for NoneType.")
 
         if self.term_id != other_occurrence.term_id:
             return self.term_id < other_occurrence.term_id
@@ -178,12 +179,10 @@ class FileIndex(Index):
         self.lst_occurrences_tmp[self.idx_tmp_occur_last_element] = TermOccurrence(
             doc_id, term_id, term_freq)
 
-        self.idx_file_counter += 1
-
         if self.idx_tmp_occur_last_element + 1 == self.TMP_OCCURRENCES_LIMIT:
+            self.save_tmp_occurrences()
             self.idx_tmp_occur_last_element = -1
             self.idx_tmp_occur_first_element = 0
-            self.save_tmp_occurrences()
 
     def get_tmp_occur_size(self) -> int:
         return self.idx_tmp_occur_last_element - self.idx_tmp_occur_first_element + 1 if self.idx_tmp_occur_last_element > -1 else 0
@@ -201,10 +200,12 @@ class FileIndex(Index):
 
     def next_from_file(self, file_pointer) -> TermOccurrence:
         # next_from_file = pickle.load(file_idx)
+        if file_pointer is None:
+            return None
+
         bytes_doc_id = file_pointer.read(4)
         if not bytes_doc_id:
             return None
-            # seu código aqui :)
         doc_id = int.from_bytes(bytes_doc_id, byteorder='big')
 
         bytes_term_id = file_pointer.read(4)
@@ -217,7 +218,7 @@ class FileIndex(Index):
             return None
         term_freq = int.from_bytes(bytes_term_freq, byteorder='big')
 
-        return TermOccurrence(doc_id, term_id, term_freq)
+        return TermOccurrence(doc_id=doc_id, term_id=term_id, term_freq=term_freq)
 
     def save_tmp_occurrences(self):
 
@@ -225,9 +226,58 @@ class FileIndex(Index):
         #    Para eficiência, todo o código deve ser feito com o garbage collector desabilitado gc.disable()
         gc.disable()
 
+        occurrences = self.lst_occurrences_tmp[self.idx_tmp_occur_first_element:self.idx_tmp_occur_last_element+1]
+        occurrences.sort()
+
+        self.lst_occurrences_tmp[self.idx_tmp_occur_first_element:
+                                 self.idx_tmp_occur_last_element+1] = occurrences
+
+        # print(self.lst_occurrences_tmp, self.idx_tmp_occur_first_element,
+        #      self.idx_tmp_occur_last_element)
+
         """comparar sempre a primeira posição
         da lista com a primeira posição do arquivo usando os métodos next_from_list e next_from_file
         e use o método write do TermOccurrence para armazenar cada ocorrencia do novo índice ordenado"""
+
+        file_idx = None if self.idx_file_counter == 0 else open(
+            self.str_idx_file_name, "rb")
+        # print(self.idx_file_counter)
+        self.idx_file_counter += 1
+        # print(self.idx_file_counter)
+
+        self.str_idx_file_name = f'occur_idx_file_{self.idx_file_counter}.idx'
+
+        new_file_idx = open(self.str_idx_file_name, "wb")
+
+        next_list = self.next_from_list()
+        next_file = self.next_from_file(file_idx)
+
+        # print(file_idx)
+        while True:
+            if (next_file is not None) and (next_file is not None):
+                if next_file > next_list:
+                    next_list.write(new_file_idx)
+                    next_list = self.next_from_list()
+                elif next_file < next_list:
+                    next_file.write(new_file_idx)
+                    next_file = self.next_from_file(file_idx)
+                else:
+                    next_file = self.next_from_file(file_idx)
+                    next_list = self.next_from_list()
+            elif next_list is not None:
+                next_list.write(new_file_idx)
+                next_list = self.next_from_list()
+            elif next_file is not None:
+                next_file.write(new_file_idx)
+                next_file = self.next_from_file(file_idx)
+            else:
+                break
+
+        self.idx_tmp_occur_first_element = 0
+        self.idx_tmp_occur_last_element = -1
+        new_file_idx.close()
+        if file_idx is not None:
+            file_idx.close()
 
         gc.enable()
 
