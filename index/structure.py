@@ -307,23 +307,22 @@ class FileIndex(Index):
             term_anterior = term_atual
 
             if term_atual.term_id not in dic_ids_por_termo.keys():
-                dic_ids_por_termo[term_atual.term_id] = TermFilePosition(
-                    term_id=term_atual.term_id)
+                dic_ids_por_termo[term_atual.term_id] = self.create_index_entry(
+                    term_atual.term_id)
 
             dic_ids_por_termo[term_atual.term_id].term_file_start_pos = 0
 
             while term_atual is not None:
                 position = idx_file.tell()
 
-                if term_atual.term_id not in dic_ids_por_termo.keys():
-                    dic_ids_por_termo[term_atual.term_id] = TermFilePosition(
-                        term_atual.term_id)
-                    dic_ids_por_termo[term_atual.term_id].term_file_start_pos = position - 12
-                    count_term = 1
-                elif term_atual.term_id == term_anterior.term_id:
+                if term_atual.term_id == term_anterior.term_id:
                     count_term += 1
                 else:
                     dic_ids_por_termo[term_anterior.term_id].doc_count_with_term = count_term
+
+                    if term_atual.term_id not in dic_ids_por_termo.keys():
+                        dic_ids_por_termo[term_atual.term_id] = self.create_index_entry(
+                            term_atual.term_id)
                     dic_ids_por_termo[term_atual.term_id].term_file_start_pos = position - 12
                     count_term = 1
 
