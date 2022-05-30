@@ -1,3 +1,4 @@
+from curses import termattrs
 from IPython.display import clear_output
 from typing import List, Set, Union
 from abc import abstractmethod
@@ -335,7 +336,24 @@ class FileIndex(Index):
         # print(self.dic_index)
 
     def get_occurrence_list(self, term: str) -> List:
-        return self.dic_index[term] if term in self.dic_index.keys() else []
+        term_pos = self.dic_index[term] if term in self.dic_index.keys() else [
+        ]
+
+        if term_pos == []:
+            return []
+
+        terms_occ = []
+
+        arquivo = open(self.str_idx_file_name, 'rb')
+
+        arquivo.seek(term_pos.term_file_start_pos)
+
+        for i in range(term_pos.doc_count_with_term):
+            terms_occ.append(self.next_from_file(arquivo))
+
+        arquivo.close()
+
+        return terms_occ
 
     def document_count_with_term(self, term: str) -> int:
         return self.dic_index[term].doc_count_with_term if term in self.dic_index.keys() else 0
