@@ -24,7 +24,7 @@ class Cleaner:
         self.perform_stemming = perform_stemming
 
     def html_to_plain_text(self, html_doc: str) -> str:
-        return None
+        return BeautifulSoup(html_doc, features="lxml").get_text()
 
     @staticmethod
     def read_stop_words(str_file) -> set:
@@ -36,7 +36,7 @@ class Cleaner:
         return set_stop_words
 
     def is_stop_word(self, term: str):
-        return True
+        return self.set_stop_words.__contains__(term)
 
     def word_stem(self, term: str):
         return ""
@@ -49,6 +49,8 @@ class Cleaner:
 
     def preprocess_text(self, text: str) -> str or None:
         return None
+
+
 class HTMLIndexer:
     cleaner = Cleaner(stop_words_file="stopwords.txt",
                       language="portuguese",
