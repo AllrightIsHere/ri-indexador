@@ -63,11 +63,20 @@ class Index:
         pass
 
     def write(self, arq_index: str):
-        pass
+        #print(f'{arq_index}: {self.dic_index}')
+        arquivo = open(arq_index, 'wb')
+        pickle.dump(self, arquivo)
+        arquivo.close()
 
     @staticmethod
     def read(arq_index: str):
-        pass
+        arquivo = open(arq_index, 'rb')
+        obj = pickle.load(arquivo)
+        arquivo.close()
+
+        #print(f'read: {dic_index}')
+
+        return obj
 
     def __str__(self):
         arr_index = []
