@@ -335,7 +335,7 @@ class FileIndex(Index):
         # print(self.dic_index)
 
     def get_occurrence_list(self, term: str) -> List:
-        return []
+        return self.dic_index[term] if term in self.dic_index.keys() else []
 
     def document_count_with_term(self, term: str) -> int:
-        return 0
+        return self.dic_index[term].doc_count_with_term if term in self.dic_index.keys() else 0
