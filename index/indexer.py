@@ -49,11 +49,13 @@ class Cleaner:
     def preprocess_word(self, term: str) -> str or None:
         if term in self.set_punctuation:
             return None
-        if self.perform_stop_words_removal and self.is_stop_word(term):
+
+        if self.perform_stop_words_removal and self.is_stop_word(term.lower()):
             return None
-        if self.perform_stemming and self.perform_stemming:
-            return self.word_stem(self.preprocess_text(term))
-        return self.preprocess_text(term)
+
+        term_process = self.preprocess_text(term)
+
+        return self.word_stem(term_process) if self.perform_stemming else term_process
 
     def preprocess_text(self, text: str) -> str or None:
         return self.remove_accents(text.lower())
@@ -87,22 +89,25 @@ class HTMLIndexer:
     def index_text(self, doc_id: int, text_html: str):
         terms_count = self.text_word_count(
             self.cleaner.html_to_plain_text(text_html))
-
+        # print(terms_count)
         for term, count in terms_count.items():
             self.index.index(term, doc_id, count)
 
         self.index.finish_indexing()
 
     def index_text_dir(self, path: str):
+        # print(self.cleaner.set_stop_words)
         for str_sub_dir in os.listdir(path):
             path_sub_dir = f"{path}/{str_sub_dir}"
 
             for name_file in os.listdir(path_sub_dir):
                 path_file = f'{path_sub_dir}/{name_file}'
+                # print(path_file)
                 with open(path_file, 'r') as arquivo:
                     html_text = arquivo.read()
-                    print(html_text)
+                    # print(html_text)
                     name = name_file.replace('.html', '')
-                    self.index_text(name, html_text)
+                    # print(html_text)
+                    self.index_text(int(name), html_text)
 
                     arquivo.close()
