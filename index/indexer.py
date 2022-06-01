@@ -36,7 +36,7 @@ class Cleaner:
         return set_stop_words
 
     def is_stop_word(self, term: str):
-        return self.set_stop_words.__contains__(term)
+        return term in self.set_stop_words
 
     def word_stem(self, term: str):
         return self.stemmer.stem(term)
@@ -45,6 +45,8 @@ class Cleaner:
         return term.translate(self.accents_translation_table)
 
     def preprocess_word(self, term: str) -> str or None:
+        if term in self.set_punctuation:
+            return None
         if self.perform_stop_words_removal and self.is_stop_word(term):
             return None
         if self.perform_stemming and self.perform_stemming:
@@ -68,7 +70,17 @@ class HTMLIndexer:
     def text_word_count(self, plain_text: str):
         dic_word_count = {}
 
-        return dic_word_count
+        tokens = word_tokenize(plain_text)
+
+        for token in tokens:
+            term = self.cleaner.preprocess_word(token)
+
+            if term is not None:
+                if term not in dic_word_count.keys():
+                    dic_word_count[term] = 0
+                dic_word_count[term] += 1
+
+        return dict(sorted(dic_word_count.items(), key=lambda x: (-x[1], x[0])))
 
     def index_text(self, doc_id: int, text_html: str):
         pass
