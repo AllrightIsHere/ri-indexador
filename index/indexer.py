@@ -15,7 +15,7 @@ class Cleaner:
         in_table = "áéíóúâêôçãẽõü"
         out_table = "aeiouaeocaeou"
         # altere a linha abaixo para remoção de acentos (Atividade 11)
-        self.accents_translation_table = None
+        self.accents_translation_table = str().maketrans(in_table, out_table)
         self.set_punctuation = set(string.punctuation)
 
         # flags
@@ -39,16 +39,20 @@ class Cleaner:
         return self.set_stop_words.__contains__(term)
 
     def word_stem(self, term: str):
-        return ""
+        return self.stemmer.stem(term)
 
     def remove_accents(self, term: str) -> str:
-        return None
+        return term.translate(self.accents_translation_table)
 
     def preprocess_word(self, term: str) -> str or None:
-        return None
+        if self.perform_stop_words_removal and self.is_stop_word(term):
+            return None
+        if self.perform_stemming and self.perform_stemming:
+            return self.word_stem(self.preprocess_text(term))
+        return self.preprocess_text(term)
 
     def preprocess_text(self, text: str) -> str or None:
-        return None
+        return self.remove_accents(text.lower())
 
 
 class HTMLIndexer:
