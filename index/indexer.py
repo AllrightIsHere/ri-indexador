@@ -4,6 +4,8 @@ import string
 from nltk.tokenize import word_tokenize
 import os
 
+from regex import F
+
 
 class Cleaner:
     def __init__(self, stop_words_file: str, language: str,
@@ -94,3 +96,13 @@ class HTMLIndexer:
     def index_text_dir(self, path: str):
         for str_sub_dir in os.listdir(path):
             path_sub_dir = f"{path}/{str_sub_dir}"
+
+            for name_file in os.listdir(path_sub_dir):
+                path_file = f'{path_sub_dir}/{name_file}'
+                with open(path_file, 'r') as arquivo:
+                    html_text = arquivo.read()
+                    print(html_text)
+                    name = name_file.replace('.html', '')
+                    self.index_text(name, html_text)
+
+                    arquivo.close()
