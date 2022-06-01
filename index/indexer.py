@@ -80,10 +80,16 @@ class HTMLIndexer:
                     dic_word_count[term] = 0
                 dic_word_count[term] += 1
 
-        return dict(sorted(dic_word_count.items(), key=lambda x: (-x[1], x[0])))
+        return dic_word_count
 
     def index_text(self, doc_id: int, text_html: str):
-        pass
+        terms_count = self.text_word_count(
+            self.cleaner.html_to_plain_text(text_html))
+
+        for term, count in terms_count.items():
+            self.index.index(term, doc_id, count)
+
+        self.index.finish_indexing()
 
     def index_text_dir(self, path: str):
         for str_sub_dir in os.listdir(path):
