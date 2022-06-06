@@ -93,8 +93,6 @@ class HTMLIndexer:
         for term, count in terms_count.items():
             self.index.index(term, doc_id, count)
 
-        self.index.finish_indexing()
-
     def index_text_dir(self, path: str):
         # print(self.cleaner.set_stop_words)
         for str_sub_dir in os.listdir(path):
@@ -111,3 +109,5 @@ class HTMLIndexer:
                     self.index_text(int(name), html_text)
 
                     arquivo.close()
+
+        self.index.finish_indexing()
