@@ -106,7 +106,7 @@ class TermOccurrence:
         return hash((self.doc_id, self.term_id))
 
     def __eq__(self, other_occurrence: "TermOccurrence"):
-        if other_occurrence is None:
+        if not other_occurrence:
             return False
 
         return self.term_id == other_occurrence.term_id and self.doc_id == other_occurrence.doc_id
@@ -141,7 +141,7 @@ class HashIndex(Index):
             doc_id=doc_id, term_freq=term_freq, term_id=term_id))
 
     def get_occurrence_list(self, term: str) -> List:
-        return self.dic_index[term] if term in self.dic_index.keys() else []
+        return self.dic_index[term] if term in self.dic_index else []
 
     def document_count_with_term(self, term: str) -> int:
         return len(self.get_occurrence_list(term))
@@ -189,10 +189,8 @@ class FileIndex(Index):
         self.lst_occurrences_tmp[self.idx_tmp_occur_last_element] = TermOccurrence(
             doc_id, term_id, term_freq)
 
-        if self.idx_tmp_occur_last_element + 1 == self.TMP_OCCURRENCES_LIMIT:
+        if self.get_tmp_occur_size() >= self.TMP_OCCURRENCES_LIMIT:
             self.save_tmp_occurrences()
-            self.idx_tmp_occur_last_element = -1
-            self.idx_tmp_occur_first_element = 0
 
     def get_tmp_occur_size(self) -> int:
         return self.idx_tmp_occur_last_element - self.idx_tmp_occur_first_element + 1 if self.idx_tmp_occur_last_element > -1 else 0
@@ -263,25 +261,22 @@ class FileIndex(Index):
         next_file = self.next_from_file(file_idx)
 
         # print(file_idx)
-        while True:
-            if (next_file is not None) and (next_file is not None):
-                if next_file > next_list:
-                    next_list.write(new_file_idx)
-                    next_list = self.next_from_list()
-                elif next_file < next_list:
-                    next_file.write(new_file_idx)
-                    next_file = self.next_from_file(file_idx)
-                else:
-                    next_file = self.next_from_file(file_idx)
-                    next_list = self.next_from_list()
-            elif next_list is not None:
-                next_list.write(new_file_idx)
-                next_list = self.next_from_list()
-            elif next_file is not None:
+
+        while next_file and next_list:
+            if next_list > next_file:
                 next_file.write(new_file_idx)
                 next_file = self.next_from_file(file_idx)
             else:
-                break
+                next_list.write(new_file_idx)
+                next_list = self.next_from_list()
+
+        while next_list:
+            next_list.write(new_file_idx)
+            next_list = self.next_from_list()
+
+        while next_file:
+            next_file.write(new_file_idx)
+            next_file = self.next_from_file(file_idx)
 
         self.idx_tmp_occur_first_element = 0
         self.idx_tmp_occur_last_element = -1
@@ -365,4 +360,4 @@ class FileIndex(Index):
         return terms_occ
 
     def document_count_with_term(self, term: str) -> int:
-        return self.dic_index[term].doc_count_with_term if term in self.dic_index.keys() else 0
+        return self.dic_index[term].doc_count_with_term if term in self.dic_index else 0

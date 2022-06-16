@@ -1,8 +1,10 @@
+from textwrap import indent
 from nltk.stem.snowball import SnowballStemmer
 from bs4 import BeautifulSoup
 import string
 from nltk.tokenize import word_tokenize
 import os
+import json
 
 from regex import F
 
@@ -50,15 +52,13 @@ class Cleaner:
         if term in self.set_punctuation:
             return None
 
-        if self.perform_stop_words_removal and self.is_stop_word(term.lower()):
+        if self.perform_stop_words_removal and self.is_stop_word(term):
             return None
 
-        term_process = self.preprocess_text(term)
-
-        return self.word_stem(term_process) if self.perform_stemming else term_process
+        return self.word_stem(term) if self.perform_stemming else term
 
     def preprocess_text(self, text: str) -> str or None:
-        return self.remove_accents(text.lower())
+        return self.remove_accents(text.lower()) if self.perform_accents_removal else text.lower()
 
 
 class HTMLIndexer:
@@ -70,17 +70,20 @@ class HTMLIndexer:
 
     def __init__(self, index):
         self.index = index
+        self.debug_set = []
 
     def text_word_count(self, plain_text: str):
         dic_word_count = {}
 
-        tokens = word_tokenize(plain_text)
+        plain_text = self.cleaner.preprocess_text(plain_text)
+
+        tokens = word_tokenize(plain_text, language="portuguese")
 
         for token in tokens:
             term = self.cleaner.preprocess_word(token)
 
             if term is not None:
-                if term not in dic_word_count.keys():
+                if term not in dic_word_count:
                     dic_word_count[term] = 0
                 dic_word_count[term] += 1
 
@@ -89,6 +92,9 @@ class HTMLIndexer:
     def index_text(self, doc_id: int, text_html: str):
         terms_count = self.text_word_count(
             self.cleaner.html_to_plain_text(text_html))
+
+        if "horizonte" in terms_count:
+            self.debug_set.append([doc_id, terms_count["horizonte"]])
         # print(terms_count)
         for term, count in terms_count.items():
             self.index.index(term, doc_id, count)
@@ -111,3 +117,9 @@ class HTMLIndexer:
                     arquivo.close()
 
         self.index.finish_indexing()
+
+        file_debug = open("debug_nosso.json", "w")
+
+        json.dump(self.debug_set, file_debug, indent=4)
+
+        file_debug.close()
